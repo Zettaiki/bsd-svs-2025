@@ -365,9 +365,17 @@ class DualControl(object):
                         current_lights ^= carla.VehicleLightState.Fog
                 # L3 -> Toggle left blinker
                 elif event.button == self._left_blinker_idx:
+                    if current_lights & carla.VehicleLightState.LeftBlinker:
+                        world.hud.notification("Left blinker off")
+                    else:
+                        world.hud.notification("Left blinker on")
                     current_lights ^= carla.VehicleLightState.LeftBlinker
                 # R3 -> Toggle right blinker
                 elif event.button == self._right_blinker_idx:
+                    if current_lights & carla.VehicleLightState.RightBlinker:
+                        world.hud.notification("Right blinker off")
+                    else:
+                        world.hud.notification("Right blinker on")
                     current_lights ^= carla.VehicleLightState.RightBlinker
                 elif event.button == 23:
                     world.camera_manager.next_sensor()
@@ -515,6 +523,12 @@ class DualControl(object):
 class HUD(object):
     def __init__(self, width, height):
         self.dim = (width, height)
+        # Indicator visual parameters
+        # slightly bigger by default per user request
+        self._indicator_size = 36
+        self._indicator_margin = 12
+        # will be set on tick
+        self._world = None
         font = pygame.font.Font(pygame.font.get_default_font(), 20)
         font_name = 'courier' if os.name == 'nt' else 'mono'
         fonts = [x for x in pygame.font.get_fonts() if font_name in x]
@@ -539,6 +553,8 @@ class HUD(object):
 
     def tick(self, world, clock):
         self._notifications.tick(world, clock)
+        # keep reference to world so we can read vehicle light state on render
+        self._world = world
         if not self._show_info:
             return
         t = world.player.get_transform()
@@ -629,6 +645,51 @@ class HUD(object):
                     surface = self._font_mono.render(item, True, (255, 255, 255))
                     display.blit(surface, (8, v_offset))
                 v_offset += 18
+        # draw left/right directional indicators in the bottom corners
+        try:
+            lights = 0
+            if self._world and self._world.player is not None:
+                lights = self._world.player.get_light_state()
+        except Exception:
+            lights = 0
+
+        # simple blinking using simulation time (toggle ~2 times/sec)
+        blink_on = int(self.simulation_time * 2) % 2 == 0
+        left_active = bool(lights & carla.VehicleLightState.LeftBlinker) and blink_on
+        right_active = bool(lights & carla.VehicleLightState.RightBlinker) and blink_on
+
+        size = self._indicator_size
+        margin = self._indicator_margin
+        h = self.dim[1]
+
+        notif_h = 40
+        center_y = self.dim[1] - notif_h - margin - size // 2
+
+        # Left indicator (triangle pointing left)
+        lx = margin
+        left_points = [
+            (lx, center_y),
+            (lx + size, center_y - size // 2),
+            (lx + size, center_y + size // 2),
+        ]
+
+        # Right indicator (triangle pointing right)
+        rx = self.dim[0] - margin
+        right_points = [
+            (rx, center_y),
+            (rx - size, center_y - size // 2),
+            (rx - size, center_y + size // 2),
+        ]
+
+        left_color = (0, 255, 0) if left_active else (60, 60, 60)
+        right_color = (0, 255, 0) if right_active else (60, 60, 60)
+
+        try:
+            pygame.draw.polygon(display, left_color, left_points)
+            pygame.draw.polygon(display, right_color, right_points)
+        except Exception:
+            pass
+
         self._notifications.render(display)
         self.help.render(display)
 
