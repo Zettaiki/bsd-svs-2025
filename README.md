@@ -44,10 +44,10 @@ src
     |-- BSD.ipynb                         # Simulation notebook
     |-- cv_model
     |   `-- yolov5nu.pt                   # Pre-trained YOLOv5 nano
-    |-- manual_control.py
     |-- manual_control_steeringwheel.py
     |-- sounds
     |   `-- allert.mp3
+    |-- wheel_config_xbox360.ini          # Xbox 360 config
     `-- wheel_config.ini                  # Steering wheel config
 ```
 
