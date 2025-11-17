@@ -41,14 +41,14 @@ The project is structured as follows:
 ```
 src
 `-- python
-    |-- BSD.ipynb                         # Simulation notebook
+    |-- BSD.ipynb                           # Main Jupyter Notebook for simulation
     |-- cv_model
-    |   `-- yolov5nu.pt                   # Pre-trained YOLOv5 nano
-    |-- manual_control_steeringwheel.py
+    |   `-- yolov5nu.pt                     # Pre-trained YOLOv5 nano model
+    |-- manual_control_steeringwheel.py     
     |-- sounds
-    |   `-- allert.mp3
-    |-- wheel_config_xbox360.ini          # Xbox 360 config
-    `-- wheel_config.ini                  # Steering wheel config
+    |   `-- alert.mp3                       # Audio alert file
+    |-- wheel_config.ini                    # Default steering wheel configuration        
+    `-- wheel_config_xbox360.ini            # Configuration for Xbox 360 controller
 ```
 
 ## Setup and Run
